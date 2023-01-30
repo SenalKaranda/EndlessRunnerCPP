@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "LevelHandler.h"
 #include "BaseLevel.h"
 #include "Components/BoxComponent.h"
@@ -18,6 +15,7 @@ void ALevelHandler::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//Spawn initial levels
 	SpawnLevel(true);
 	SpawnLevel(false);
 	SpawnLevel(false);
@@ -40,6 +38,7 @@ void ALevelHandler::SpawnLevel(bool isFirst)
 	ABaseLevel* LastLevel = nullptr;
 	ABaseLevel* NewLevel = nullptr;
 
+	//Setup new level spawning values, and chooses a random level to spawn from the level array
 	if (!isFirst)
 	{
 		LastLevel = LevelList.Last();
@@ -49,6 +48,7 @@ void ALevelHandler::SpawnLevel(bool isFirst)
 	
 	NewLevel = GetWorld()->SpawnActor<ABaseLevel>(Levels[RandomLevelIndex], SpawnLocation, SpawnRotation, SpawnInfo);
 
+	//Setup trigger function to spawn new levels as Player progresses
 	if (NewLevel)
 	{
 		if (NewLevel->GetTrigger())
@@ -57,6 +57,7 @@ void ALevelHandler::SpawnLevel(bool isFirst)
 		}
 	}
 
+	//Makes sure not more than 5 level prefabs are active in the level at once
 	LevelList.Add(NewLevel);
 	if (LevelList.Num() > 5)
 	{
