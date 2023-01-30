@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "RunnerChar.h"
 #include "Components/CapsuleComponent.h"
 #include "Camera/CameraComponent.h"
@@ -25,8 +22,9 @@ ARunnerChar::ARunnerChar()
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
 
-	//Setup Camera
 	SideViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Side View Camera"));
+
+	//Controller will not be handling rotation of Camera
 	SideViewCamera->bUsePawnControlRotation = false;
 
 	//Setup Character Movement to auto rotate with movement direction
@@ -52,9 +50,12 @@ void ARunnerChar::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//Set Capsule Component to run custom function on overlap
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ARunnerChar::OnOverlapBegin);
 
+	//Set start position for score calculation
 	startPos = GetActorLocation();
+
 	canMove = true;
 	
 }
@@ -64,11 +65,13 @@ void ARunnerChar::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//Use tick to have Camera follow Player
 	tempPos = GetActorLocation();
 	tempPos.X -= 850.f;
 	tempPos.Z = zPosition;
 	SideViewCamera->SetWorldLocation(tempPos);
 
+	//Update score as player moves forward, but don't reduce score for backward movement
 	if (canMove)
 	{
 		if (distanceScore <= FMath::Abs(FMath::RoundFromZero((startPos.Y - GetActorLocation().Y) / 10)))
@@ -102,13 +105,14 @@ void ARunnerChar::RestartLevel_Implementation()
 
 void ARunnerChar::PlayerDeath_Implementation()
 {
-
+	//Used for Blueprint override of PlayerDeath function
 }
 
 void ARunnerChar::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor != nullptr)
 	{
+		//Try cast to either KillObstacle or KillWall to decide whether to kill Player & restart level
 		AKillObstacle* KillerObstacle = Cast<AKillObstacle>(OtherActor);
 		AKillWall* KillerWall = Cast<AKillWall>(OtherActor);
 
